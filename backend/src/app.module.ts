@@ -9,6 +9,8 @@ import { EmbeddingsModule } from './embeddings/embeddings.module';
 import { ChatModule } from './chat/chat.module';
 import { QueueModule } from './queue/queue.module';
 import { Document } from './documents/entities/document.entity';
+import { Conversation } from './chat/entities/conversation.entity';
+import { Message } from './chat/entities/message.entity';
 
 @Module({
   imports: [
@@ -22,7 +24,7 @@ import { Document } from './documents/entities/document.entity';
         username: config.get<string>('POSTGRES_USER', 'rag_user'),
         password: config.get<string>('POSTGRES_PASSWORD', 'rag_password'),
         database: config.get<string>('POSTGRES_DB', 'rag_db'),
-        entities: [Document],
+        entities: [Document, Conversation, Message],
         synchronize: config.get<string>('NODE_ENV') !== 'production',
       }),
     }),
