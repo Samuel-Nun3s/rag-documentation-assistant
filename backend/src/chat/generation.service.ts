@@ -21,4 +21,20 @@ export class GenerationService {
 
     return response.choices[0].message.content ?? '';
   }
+
+  async *generateStream(params: { system: string; user: string }): AsyncGenerator<string> {
+    const stream = await this.openai.chat.completions.create({
+      model: 'gpt-4o',
+      stream: true,
+      messages: [
+        { role: 'system', content: params.system },
+        { role: 'user', content: params.user },
+      ],
+    });
+
+    for await (const chunk of stream) {
+      const token = chunk.choices[0]?.delta?.content ?? '';
+      if (token) yield token;
+    }
+  }
 }
