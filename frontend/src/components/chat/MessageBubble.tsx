@@ -1,3 +1,5 @@
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Message } from '@/types'
@@ -28,8 +30,19 @@ export function MessageBubble({ message, streaming }: Props) {
             ? 'bg-neutral-900 text-white'
             : 'bg-neutral-100 text-neutral-900',
         )}>
-          {message.content}
-          {streaming && (
+          {isUser ? (
+            <span>{message.content}</span>
+          ) : (
+            <div className="prose prose-sm prose-neutral max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-code:bg-neutral-200 prose-code:px-1 prose-code:rounded prose-pre:bg-neutral-200 prose-pre:rounded-lg">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content}
+              </ReactMarkdown>
+              {streaming && (
+                <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-current align-middle" />
+              )}
+            </div>
+          )}
+          {isUser && streaming && (
             <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-current align-middle" />
           )}
         </div>
