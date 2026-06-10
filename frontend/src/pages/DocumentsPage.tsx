@@ -23,6 +23,22 @@ export function DocumentsPage() {
 
   useEffect(() => { loadDocuments() }, [loadDocuments])
 
+  // Auto-poll every 2s while any document is still processing
+  useEffect(() => {
+    const hasProcessing = documents.some((d) => d.status === 'processing')
+    if (!hasProcessing) return
+
+    const interval = setInterval(async () => {
+      const processing = documents.filter((d) => d.status === 'processing')
+      const updated = await Promise.all(processing.map((d) => documentsApi.get(d.id)))
+      setDocuments((prev) =>
+        prev.map((d) => updated.find((u) => u.id === d.id) ?? d),
+      )
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [documents])
+
   const handleUploaded = (doc: Document) => {
     setDocuments((prev) => [doc, ...prev])
   }
