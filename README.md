@@ -6,6 +6,14 @@ Upload a document, ask a question in natural language, and get an answer grounde
 
 ---
 
+## Screenshots
+
+| Documents | Chat |
+|---|---|
+| ![Documents page](docs/images/home.png) | ![Chat page](docs/images/chat.png) |
+
+---
+
 ## Architecture
 
 ```
@@ -116,7 +124,7 @@ Open `http://localhost:5173` in your browser.
 
 Drag and drop a PDF or Markdown file onto the upload zone, or paste a public GitHub repository URL and click **Index**.
 
-The document is processed asynchronously — the status badge updates from `Processing` to `Ready` when indexing is complete (click the refresh icon to check).
+The document is processed asynchronously — the status badge updates automatically from `Processing` to `Ready` when indexing is complete (no manual refresh needed).
 
 ### Chat
 
