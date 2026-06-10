@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ChromaClient, Collection, EmbeddingFunction } from 'chromadb';
+import { ChromaClient } from 'chromadb';
 
 export interface VectorSearchResult {
   id: string;
@@ -9,34 +9,31 @@ export interface VectorSearchResult {
   distance: number;
 }
 
-// Bypass ChromaDB's built-in embedding — we pass pre-computed vectors directly
-class PassthroughEmbedding implements EmbeddingFunction {
-  async generate(texts: string[]): Promise<number[][]> {
-    return texts.map(() => []);
-  }
-}
-
 @Injectable()
 export class VectorStoreService implements OnModuleInit {
   private client: ChromaClient;
   private readonly collectionName = 'rag_documents';
-  private collection: Collection;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private collection: any;
 
   constructor(private config: ConfigService) {}
 
   async onModuleInit() {
+    const chromaUrl = this.config.get<string>('CHROMA_URL', 'http://localhost:8000');
+    const url = new URL(chromaUrl);
+
     this.client = new ChromaClient({
-      path: this.config.get<string>('CHROMA_URL', 'http://localhost:8000'),
-      auth: {
-        provider: 'token',
-        credentials: this.config.get<string>('CHROMA_TOKEN', 'rag-chroma-token'),
-        tokenHeaderType: 'AUTHORIZATION',
+      host: url.hostname,
+      port: parseInt(url.port || '8000'),
+      ssl: url.protocol === 'https:',
+      headers: {
+        Authorization: `Bearer ${this.config.get<string>('CHROMA_TOKEN', 'rag-chroma-token')}`,
       },
-    });
+    } as any);
 
     this.collection = await this.client.getOrCreateCollection({
       name: this.collectionName,
-      embeddingFunction: new PassthroughEmbedding(),
+      embeddingFunction: null,
     });
   }
 
