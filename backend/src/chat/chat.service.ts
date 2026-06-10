@@ -54,10 +54,8 @@ export class ChatService {
     }));
 
     const answer = await this.generation.generate({
-      system:
-        'Responda apenas com base no contexto fornecido. ' +
-        'Ao final da resposta, cite as fontes no formato [Fonte: <fileName>].',
-      user: `Contexto:\n${context}\n\nPergunta: ${question}`,
+      system: buildSystemPrompt(),
+      user: buildUserPrompt(context, question),
     });
 
     return this.messageRepo.save(
@@ -99,10 +97,8 @@ export class ChatService {
     let fullAnswer = '';
 
     for await (const token of this.generation.generateStream({
-      system:
-        'Responda apenas com base no contexto fornecido. ' +
-        'Ao final da resposta, cite as fontes no formato [Fonte: <fileName>].',
-      user: `Contexto:\n${context}\n\nPergunta: ${question}`,
+      system: buildSystemPrompt(),
+      user: buildUserPrompt(context, question),
     })) {
       fullAnswer += token;
       yield { token };
@@ -134,4 +130,21 @@ export class ChatService {
       order: { createdAt: 'ASC' },
     });
   }
+}
+
+function buildSystemPrompt(): string {
+  return `Você é um assistente especializado em análise de documentos e código-fonte.
+Sua função é responder perguntas com base exclusivamente nos trechos de contexto fornecidos pelo usuário.
+
+Diretrizes:
+- Responda de forma clara, objetiva e bem estruturada.
+- Se a pergunta for sobre o propósito ou funcionamento geral do projeto, sintetize as informações dos arquivos de documentação (README, docs) e do código-fonte em uma resposta coerente.
+- Não invente informações que não estejam nos trechos fornecidos.
+- Se o contexto não contiver informações suficientes para responder, diga isso claramente.
+- Ao citar trechos específicos, indique o arquivo de origem no formato [Fonte: <fileName>].
+- Responda no mesmo idioma da pergunta do usuário.`;
+}
+
+function buildUserPrompt(context: string, question: string): string {
+  return `Trechos relevantes do documento:\n\n${context}\n\n---\n\nPergunta: ${question}`;
 }
